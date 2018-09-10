@@ -24,7 +24,7 @@ sort.data.frame <- function(x, decreasing=FALSE, by=1, ... ){
   x[i,,drop=FALSE]
 }
 
-unnest <- function(x) {
+unnestDV <- function(x) {
   if(is.null(names(x))) {
     list(unname(unlist(x)))
   }
@@ -39,12 +39,26 @@ round_df <- function(df, digits) {
   (df)
 }
 
-# libraries to load by default
-library(ggplot2)
-library(data.table)
-library(RColorBrewer)
-library(reshape2)
+listofobjectstoxls <- function(characterlistofobjectnames, filename = "outputworksheet", suffix = ""){
+  library(openxlsx) # exporting to excel
+  # Test that all objects exist
+  for (object in paste0(characterlistofobjectnames, suffix, sep = "")) {
+    if (exists(object) == FALSE) {
+        stop(paste0(paste0("The object ", object), " does not exist! Please edit your input list before continuing."))
+      }
+  }
 
+  tmpworkbookname <- createWorkbook()
+    for (object in characterlistofobjectnames) {
+        addWorksheet(wb = tmpworkbookname, sheetName = object, gridLines = FALSE)
+        writeData(wb = tmpworkbookname, sheet = object, x = eval(as.name(paste0(object, suffix))), borders = "none")
+    }
+  saveWorkbook(tmpworkbookname, file = filename, overwrite = TRUE)
+  rm(tmpworkbookname, object)
+}
+
+# libraries to load by default
+library(RColorBrewer)
 
 # My ggplot2 custom themes
 theme_greyDV <- function(base_size = 16, base_family = "Helvetica") {
